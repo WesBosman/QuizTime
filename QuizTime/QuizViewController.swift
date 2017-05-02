@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreMotion
+import MultipeerConnectivity
 
 class QuizViewController: UIViewController {
     // People images
@@ -45,15 +46,70 @@ class QuizViewController: UIViewController {
     var bSelected = false
     var cSelected = false
     var dSelected = false
+    
+    // Passed in variables
+    var numberOfPlayers = 0
+    var sessionOfPlayers: MCSession!
+    
+    // URL of JSON data
+    let quizUrl = URL(string: "http://www.people.vcu.edu/~ebulut/jsonFiles/quiz1.json")!
+    let session = URLSession.shared
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let task = session.dataTask(with: quizUrl, completionHandler: {
+            (data, response, error) -> Void in
+            
+            print("Task Completion Handler")
+            
+            if let d = data{
+                print("Data: \(d)")
+            }
+            
+            if let r = response as? HTTPURLResponse{
+                print("Response: \(r)")
+                
+                if r.statusCode == 200{
+                    print("Successfully getting info from server")
+                    do{
+                        // Read JSON Data as a Dictionary
+                        let json = try JSONSerialization.jsonObject(with: data!, options: .allowFragments) as! [String: Any]
+                        
+                        
+                        if let numQuestions = json["numberOfQuestions"]{
+                            print("Number of Questions: \(numQuestions)")
+                        }
+                        
+                        if let questions = json["questions"]{
+                            print("Questions: \(questions)")
+                        }
+                        
+                        if let topic = json["topic"]{
+                            print("Topic: \(topic)")
+                        }
+                        
+                    }
+                    catch let err as NSError{
+                        print("ERROR: \(err.localizedDescription)")
+                    }
+                }
+            }
+            
+            if let e = error{
+                print("Error: \(e)")
+            }
+            
+        })
+        task.resume()
         
         // Selectors for buttons
         answerButtonA.addTarget(self, action: #selector(buttonASelected), for: .touchUpInside)
         answerButtonB.addTarget(self, action: #selector(buttonBSelected), for: .touchUpInside)
         answerButtonC.addTarget(self, action: #selector(buttonCSelected), for: .touchUpInside)
         answerButtonD.addTarget(self, action: #selector(buttonDSelected), for: .touchUpInside)
+        
     }
     
     func updateSelectedButtonColor(){

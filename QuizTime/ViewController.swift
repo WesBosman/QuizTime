@@ -19,10 +19,10 @@ class ViewController:
     var browser: MCBrowserViewController!
     var assistant: MCAdvertiserAssistant!
     var singlePlayerSelected: Bool = true
-    let maxPlayersToInvite: Int    = 3
+    let maxPlayersToInvite: Int    = 4
     let serviceType: String        = "chat"
-    var connectedPeers: [MCPeerID] = []
-    let quizSegue: String = "showQuizController"
+    let quizSegue:   String        = "showQuizController"
+    let segueKey:    String        = "shouldSegueToQuizController"
     
     @IBOutlet weak var playerSegmentedControl: UISegmentedControl!
 
@@ -41,6 +41,7 @@ class ViewController:
         session.delegate = self
         browser.delegate = self
         playerSegmentedControl.addTarget(self, action: #selector(playerSegmentChanged), for: .valueChanged)
+        
     }
     
     func playerSegmentChanged(sender: UISegmentedControl){
@@ -66,6 +67,21 @@ class ViewController:
     @IBAction func startQuizButtonPressed(_ sender: Any) {
         print("Start Quiz Button Pressed")
         // Should switch anyone that is connected to the quiz screen
+        for peer in session.connectedPeers{
+            print("Connected Peer: \(peer.displayName)")
+        }
+        
+        // Use a key to send everyone to the quiz segue
+        // Reliabile sends data in order but is slow
+        // Unreliable sends data faster but may be out of order
+        let data = NSKeyedArchiver.archivedData(withRootObject: segueKey)
+        do{
+            try session.send(data, toPeers: session.connectedPeers, with: MCSessionSendDataMode.unreliable)
+        }
+        catch let err as NSError{
+            print("ERROR: \(err.localizedDescription)")
+        }
+        
         performSegue(withIdentifier: quizSegue, sender: self)
         
     }
@@ -94,7 +110,16 @@ class ViewController:
     // When a peer sends data to this device
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         print("Session Did Receive Data")
+        print("Data: \(data)")
         
+        // If data is equal to segue key then go to the quiz controller
+        if let dataString = NSKeyedUnarchiver.unarchiveObject(with: data) as? String{
+            print("Data String Received: \(dataString)")
+            
+            if dataString == segueKey{
+                self.performSegue(withIdentifier: self.quizSegue, sender: self)
+            }
+        }
     }
     
     // Called when a connected peer changes its state
@@ -103,7 +128,6 @@ class ViewController:
         switch(state){
         case MCSessionState.connected:
             print("Connected to \(peerID.displayName)")
-            connectedPeers.append(peerID)
             
         case MCSessionState.connecting:
             print("Connecting to \(peerID.displayName)")
@@ -132,8 +156,19 @@ class ViewController:
         
     }
     
+    /*
+     *  Should send single player or multiplayer
+     *  May want to send the session to the quiz controller
+     */
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         print("Segue to Quiz View Controller")
+        
+        if let destination = segue.destination as? QuizViewController{
+            destination.numberOfPlayers  = session.connectedPeers.count
+            destination.sessionOfPlayers = session
+            
+            print("Number of Players: \(session.connectedPeers.count)")
+        }
     }
 
 }

@@ -10,7 +10,90 @@ import UIKit
 import MultipeerConnectivity
 
 struct Globals{
+    static var session = URLSession.shared
     static var arrayOfQuestions: [Question] = []
+    static var quizOneUrl = URL(string: "http://www.people.vcu.edu/~ebulut/jsonFiles/quiz1.json")!
+    static var quizTwoUrl = URL(string: "http://www.people.vcu.edu/~ebulut/jsonFiles/quiz2.json")!
+    static var quizThreeUrl = URL(string: "http://www.people.vcu.edu/~ebulut/jsonFiles/quiz3.json")!
+    
+    static func loadQuizData(quizUrl: URL){
+        let task = session.dataTask(with: quizUrl, completionHandler: {
+            (data, response, error) -> Void in
+            
+            print("Task Completion Handler")
+            
+            if let d = data{
+                print("Data: \(d)")
+            }
+            
+            if let r = response as? HTTPURLResponse{
+                print("Response: \(r)")
+                
+                if r.statusCode == 200{
+                    print("Successfully getting info from server")
+                    do{
+                        // Read JSON Data as a Dictionary
+                        let json = try JSONSerialization.jsonObject(with: data!, options: .allowFragments) as! [String: Any]
+                        
+                        
+                        if  let numQuestions = json["numberOfQuestions"] as? Int,
+                            let questions = json["questions"],
+                            let topic = json["topic"] as? String {
+                            
+                            print("Number of Questions: \(numQuestions)")
+                            print("Topic: \(topic)")
+                            
+                            
+                            // Parse the questions into an array
+                            if let questionsArray = questions as? NSArray{
+                                for question in questionsArray{
+                                    
+                                    if let quest = question as? NSDictionary{
+                                        
+                                        if let correctOption  = quest["correctOption"],
+                                            let number        = quest["number"],
+                                            let options       = quest["options"],
+                                            let questionSent  = quest["questionSentence"]{
+                                            
+                                            // Parse the elements into data types
+                                            if let cor = correctOption as? String,
+                                                let num = number as? Int,
+                                                let opt = options as? NSDictionary,
+                                                let sen = questionSent as? String{
+                                                
+                                                print("Corr -> \(cor)")
+                                                print("Num  -> \(num)")
+                                                print("Opt  -> \(opt)")
+                                                print("Sen  -> \(sen)")
+                                                
+                                                let newQuestion = Question(correct: cor,
+                                                                           num:     num,
+                                                                           opt:     opt,
+                                                                           sent:    sen)
+                                                
+                                                // Add the new question to the array
+                                                Globals.arrayOfQuestions.append(newQuestion)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch let err as NSError{
+                        print("ERROR: \(err.localizedDescription)")
+                    }
+                }
+            }
+            
+            if let e = error{
+                print("Error: \(e)")
+            }
+            
+        })
+        task.resume()
+
+    }
 }
 
 class ViewController:

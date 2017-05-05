@@ -38,6 +38,12 @@ class QuizViewController:
     let bubbleThreeLabel: UILabel! = UILabel()
     let bubbleFourLabel:  UILabel! = UILabel()
     
+    // Player Name Labels
+    @IBOutlet weak var playerOneNameLabel: UILabel!
+    @IBOutlet weak var playerTwoNameLabel: UILabel!
+    @IBOutlet weak var playerThreeNameLabel: UILabel!
+    @IBOutlet weak var playerFourNameLabel: UILabel!
+    
     // Header Label For Question
     @IBOutlet weak var questionHeaderLabel: UILabel!
     
@@ -73,11 +79,6 @@ class QuizViewController:
     var numberOfPlayers = 0
     var sessionOfPlayers: MCSession!
     
-    // URL of JSON data
-    let quizUrl = URL(string: "http://www.people.vcu.edu/~ebulut/jsonFiles/quiz1.json")!
-    let session = URLSession.shared
-    var arrayOfQuestions: [Question] = []
-    
     // Timer
     var questionTimer = Timer()
     var correctTimer  = Timer()
@@ -90,6 +91,7 @@ class QuizViewController:
     // Motion Manager
     let motionManager = CMMotionManager()
     var motionTimer   = Timer()
+    var myPeers: [MCPeerID] = []
     
 
     override func viewDidLoad() {
@@ -300,48 +302,66 @@ class QuizViewController:
         switch(numberOfPlayers){
         case 1:
             print("Single Player")
+            playerOneNameLabel.text = sessionOfPlayers.myPeerID.displayName
+                
             // Person Two
             personTwo.layer.opacity = opacity
             bubbleTwoLabel.layer.opacity = opacity
             textBubbleImageTwo.layer.opacity = opacity
             playerTwoScore.text = ""
+            playerTwoNameLabel.text = ""
             
             // Person Three
             personThree.layer.opacity = opacity
             bubbleThreeLabel.layer.opacity = opacity
             textBubbleImageThree.layer.opacity  = opacity
             playerThreeScore.text = ""
+            playerThreeNameLabel.text = ""
             
             // Person Four
             personFour.layer.opacity = opacity
             bubbleFourLabel.layer.opacity = opacity
             textBubbleImageFour.layer.opacity = opacity
             playerFourScore.text = ""
+            playerFourNameLabel.text = ""
             
         case 2:
             print("Two Players")
+            playerOneNameLabel.text = sessionOfPlayers.myPeerID.displayName
+            playerTwoNameLabel.text = sessionOfPlayers.connectedPeers[0].displayName
             
             // Person Three
             personThree.layer.opacity = opacity
             bubbleThreeLabel.layer.opacity = opacity
             textBubbleImageThree.layer.opacity  = opacity
             playerThreeScore.text = ""
+            playerThreeNameLabel.text = ""
             
             // Person Four
             personFour.layer.opacity = opacity
             bubbleFourLabel.layer.opacity = opacity
             textBubbleImageFour.layer.opacity = opacity
             playerFourScore.text = ""
+            playerFourNameLabel.text = ""
             
         case 3:
             print("Three Players")
+            playerOneNameLabel.text = sessionOfPlayers.myPeerID.displayName
+            playerTwoNameLabel.text = sessionOfPlayers.connectedPeers[0].displayName
+            playerThreeNameLabel.text = sessionOfPlayers.connectedPeers[1].displayName
+            
             personFour.layer.opacity = opacity
             bubbleFourLabel.layer.opacity = opacity
             textBubbleImageFour.layer.opacity = opacity
             playerFourScore.isHidden = true
+            playerFourNameLabel.text = ""
             
         case 4:
             print("Four Players")
+            playerOneNameLabel.text = sessionOfPlayers.myPeerID.displayName
+            playerTwoNameLabel.text = sessionOfPlayers.connectedPeers[0].displayName
+            playerThreeNameLabel.text = sessionOfPlayers.connectedPeers[1].displayName
+            playerFourNameLabel.text  = sessionOfPlayers.connectedPeers[2].displayName
             
         default:
             break
@@ -539,9 +559,13 @@ class QuizViewController:
         dSelected = false
         updateSelectedButtonColor()
         
+        if currentQuestion?.correctOption == "A"{
+            setUserScoreAndAnswer(index: 0, answer: "A")
+        }
+        
         let data = NSKeyedArchiver.archivedData(withRootObject: "A")
         do{
-            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.unreliable)
+            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
         }
         catch let err as NSError{
             print("ERROR: \(err.localizedDescription)")
@@ -555,9 +579,13 @@ class QuizViewController:
         dSelected = false
         updateSelectedButtonColor()
         
+        if currentQuestion?.correctOption == "B"{
+            setUserScoreAndAnswer(index: 0, answer: "B")
+        }
+        
         let data = NSKeyedArchiver.archivedData(withRootObject: "B")
         do{
-            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.unreliable)
+            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
         }
         catch let err as NSError{
             print("ERROR: \(err.localizedDescription)")
@@ -571,9 +599,13 @@ class QuizViewController:
         dSelected = false
         updateSelectedButtonColor()
         
+        if currentQuestion?.correctOption == "C"{
+            setUserScoreAndAnswer(index: 0, answer: "C")
+        }
+        
         let data = NSKeyedArchiver.archivedData(withRootObject: "C")
         do{
-            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.unreliable)
+            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
         }
         catch let err as NSError{
             print("ERROR: \(err.localizedDescription)")
@@ -587,9 +619,13 @@ class QuizViewController:
         dSelected = true
         updateSelectedButtonColor()
         
+        if currentQuestion?.correctOption == "D"{
+            setUserScoreAndAnswer(index: 0, answer: "D")
+        }
+        
         let data = NSKeyedArchiver.archivedData(withRootObject: "D")
         do{
-            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.unreliable)
+            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
         }
         catch let err as NSError{
             print("ERROR: \(err.localizedDescription)")
@@ -697,23 +733,30 @@ class QuizViewController:
                 
                 // If the answer is correct
                 if currentQuestion?.correctOption == dataString{
-                    setUserScore(index: peerIndx)
+                    setUserScoreAndAnswer(index: peerIndx, answer: dataString)
                 }
                 
             }
         }
     }
     
-    func setUserScore(index: Int){
+    func setUserScoreAndAnswer(index: Int, answer: String){
+        print("Set User Answer and Score")
+        print("Index : \(index)")
+        print("Answer: \(answer)")
         
         switch(index){
         case 0:
+            bubbleOneLabel.text = "\(answer)"
             playerOneScore.text = "\(pOneScore + 1)"
         case 1:
+            bubbleTwoLabel.text = "\(answer)"
             playerTwoScore.text = "\(pTwoScore + 1)"
         case 2:
+            bubbleThreeLabel.text = "\(answer)"
             playerThreeScore.text = "\(pThreeScore + 1)"
         case 3:
+            bubbleFourLabel.text = "\(answer)"
             playerFourScore.text = "\(pFourScore + 1)"
         default:
             break

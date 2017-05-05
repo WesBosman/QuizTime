@@ -14,6 +14,9 @@ class QuizViewController:
     UIViewController,
     MCSessionDelegate{
     
+    // Restart Button
+    @IBOutlet weak var restartButton: UIButton!
+    
     // People images
     @IBOutlet weak var personOne: UIImageView!
     @IBOutlet weak var personTwo: UIImageView!
@@ -64,6 +67,7 @@ class QuizViewController:
     var bSelected = false
     var cSelected = false
     var dSelected = false
+    var selectedAnswer: String? = nil
     
     // Passed in variables
     var numberOfPlayers = 0
@@ -92,6 +96,7 @@ class QuizViewController:
         super.viewDidLoad()
         
         timerLabel.text = ""
+        restartButton.isHidden = true
         sessionOfPlayers.delegate = self
         startQuestionTimer()
         setUpTextLabelsForBubbles()
@@ -113,7 +118,32 @@ class QuizViewController:
         answerButtonC.addTarget(self, action: #selector(buttonCSelected), for: .touchUpInside)
         answerButtonD.addTarget(self, action: #selector(buttonDSelected), for: .touchUpInside)
         
+        self.becomeFirstResponder()
+        
     }
+    
+    override var canBecomeFirstResponder: Bool{
+        get{
+            return true
+        }
+    }
+    
+    // Handle Shake motion
+    override func motionEnded(_ motion: UIEventSubtype, with event: UIEvent?) {
+        if motion == .motionShake{
+            print("USER IS SHAKING THE DEVICE!")
+            // Select an answer at random
+            selectRandomAnswer()
+        }
+    }
+    
+    @IBAction func userPressedRestartButton(_ sender: Any) {
+        print("User Pressed Restart Button")
+        
+        // How to restart the game?
+        
+    }
+    
     
     func setUpQuestionOne(){
         // Set up question one
@@ -154,62 +184,87 @@ class QuizViewController:
             let attitude     = data.attitude
             let pitch        = attitude.pitch
             let roll         = attitude.roll
+            let yaw          = attitude.yaw
+            let acceleration = data.userAcceleration.z
             
             // Go Right
             if(roll > 1.0){
                 if(aSelected){
-                    bSelected = true
-                    aSelected = false
-                    updateSelectedButtonColor()
+                    buttonBSelected()
                 }
                 else if(cSelected){
-                    dSelected = true
-                    cSelected = false
-                    updateSelectedButtonColor()
+                    buttonDSelected()
                 }
             }
             // Go Left
             else if(roll < -1.0){
                 if(bSelected){
-                    aSelected = true
-                    bSelected = false
-                    updateSelectedButtonColor()
+                    buttonASelected()
                 }
                 else if(dSelected){
-                    cSelected = true
-                    bSelected = false
-                    updateSelectedButtonColor()
+                    buttonCSelected()
                 }
             }
             
-            // Control pitch
             // Forward
             if(pitch > 1.0){
                 if(aSelected){
-                    cSelected = true
-                    aSelected = false
-                    updateSelectedButtonColor()
+                    buttonCSelected()
                 }
                 else if(bSelected){
-                    dSelected = true
-                    bSelected = false
-                    updateSelectedButtonColor()
+                    buttonDSelected()
                 }
             }
             // Backward
             else if(pitch < -1.0){
                 if(cSelected){
-                    aSelected = true
-                    cSelected = false
-                    updateSelectedButtonColor()
+                    buttonASelected()
                 }
                 else if(dSelected){
-                    bSelected = true
-                    dSelected = false
-                    updateSelectedButtonColor()
+                    buttonBSelected()
                 }
             }
+            
+            // Select an answer using acceleration in z direction
+            if(acceleration < -1.0){
+                userSelectedAnswer()
+            }
+            
+            // Let user select an answer using yaw
+            if(yaw > 1.0){
+                userSelectedAnswer()
+            }
+            else if(yaw < -1.0){
+                userSelectedAnswer()
+            }
+            
         }
+    }
+    
+    // When user is submitting an answer. Should probably rename
+    
+    func userSelectedAnswer(){
+        print("Selecting Answer")
+        if let selectedAns = selectedAnswer{
+            print("User Selected Answer: \(selectedAns)")
+            
+            switch(selectedAns){
+            case "A":
+                buttonASelected()
+            case "B":
+                buttonBSelected()
+            case "C":
+                buttonCSelected()
+            case "D":
+                buttonDSelected()
+            default:
+                break
+            }
+        }
+        else{
+            print("No Answer Selected")
+        }
+
     }
     
     func grayOutPersons(){
@@ -313,24 +368,28 @@ class QuizViewController:
             answerButtonB.backgroundColor = UIColor.lightGray
             answerButtonC.backgroundColor = UIColor.lightGray
             answerButtonD.backgroundColor = UIColor.lightGray
+            selectedAnswer = "A"
         }
         else if (bSelected){
             answerButtonA.backgroundColor = UIColor.lightGray
             answerButtonB.backgroundColor = UIColor.cyan
             answerButtonC.backgroundColor = UIColor.lightGray
             answerButtonD.backgroundColor = UIColor.lightGray
+            selectedAnswer = "B"
         }
         else if (cSelected){
             answerButtonA.backgroundColor = UIColor.lightGray
             answerButtonB.backgroundColor = UIColor.lightGray
             answerButtonC.backgroundColor = UIColor.cyan
             answerButtonD.backgroundColor = UIColor.lightGray
+            selectedAnswer = "C"
         }
         else if (dSelected){
             answerButtonA.backgroundColor = UIColor.lightGray
             answerButtonB.backgroundColor = UIColor.lightGray
             answerButtonC.backgroundColor = UIColor.lightGray
             answerButtonD.backgroundColor = UIColor.cyan
+            selectedAnswer = "D"
         }
     }
     
@@ -391,7 +450,6 @@ class QuizViewController:
             correctTimer.invalidate()
             
             if let index = Globals.arrayOfQuestions.index(where: {$0.questionSentence == currentQuestion?.questionSentence}){
-                print("Question Sentence: \(currentQuestion?.questionSentence)")
                 print("Index of Question: \(index)")
                 print("Count of questions: \(Globals.arrayOfQuestions.count - 1)")
                 
@@ -407,35 +465,47 @@ class QuizViewController:
     func goToNextQuestion(){
         // Reset the button colors
         print("Go To Next Question")
-        answerButtonA.backgroundColor = UIColor.lightGray
-        answerButtonB.backgroundColor = UIColor.lightGray
-        answerButtonC.backgroundColor = UIColor.lightGray
-        answerButtonD.backgroundColor = UIColor.lightGray
         currentQuestionIndex = currentQuestionIndex + 1
         let currentIndx = currentQuestionIndex
         
         // Update the current question
         self.currentQuestion = Globals.arrayOfQuestions[currentIndx - 1]
         
-        if currentIndx < Globals.arrayOfQuestions.count{
-            let question = Globals.arrayOfQuestions[currentIndx]
-            
-            if  let a = question.options["A"],
-                let b = question.options["B"],
-                let c = question.options["C"],
-                let d = question.options["D"]{
+        if let lastQuestion = Globals.arrayOfQuestions.last{
+            // If we are on the last question unhide the restart button
+            if self.currentQuestion?.questionSentence == lastQuestion.questionSentence{
+                print("Reached Last Question")
+                restartButton.isHidden = false
+            }
+            // Otherwise reset the buttons and text labels and start again
+            else{
+                // Set button backgrounds back to normal
+                answerButtonA.backgroundColor = UIColor.lightGray
+                answerButtonB.backgroundColor = UIColor.lightGray
+                answerButtonC.backgroundColor = UIColor.lightGray
+                answerButtonD.backgroundColor = UIColor.lightGray
                 
-                let current = question.number
-                let total   = Globals.arrayOfQuestions.count
-                questionLabel.text = question.questionSentence
-                questionHeaderLabel.text = "Question \(current)/\(total)"
-                answerButtonA.setTitle("A) \(a)", for: .normal)
-                answerButtonB.setTitle("B) \(b)", for: .normal)
-                answerButtonC.setTitle("C) \(c)", for: .normal)
-                answerButtonD.setTitle("D) \(d)", for: .normal)
-                
-                // Start new timer 
-                startQuestionTimer()
+                if currentIndx < Globals.arrayOfQuestions.count{
+                    let question = Globals.arrayOfQuestions[currentIndx]
+                    
+                    if  let a = question.options["A"],
+                        let b = question.options["B"],
+                        let c = question.options["C"],
+                        let d = question.options["D"]{
+                        
+                        let current = question.number
+                        let total   = Globals.arrayOfQuestions.count
+                        questionLabel.text = question.questionSentence
+                        questionHeaderLabel.text = "Question \(current)/\(total)"
+                        answerButtonA.setTitle("A) \(a)", for: .normal)
+                        answerButtonB.setTitle("B) \(b)", for: .normal)
+                        answerButtonC.setTitle("C) \(c)", for: .normal)
+                        answerButtonD.setTitle("D) \(d)", for: .normal)
+                        
+                        // Start new timer
+                        startQuestionTimer()
+                    }
+                }
             }
         }
     }
@@ -504,6 +574,71 @@ class QuizViewController:
         }
     }
     
+    // MARK - Random Selection of Answers
+    
+    // Generate a random integer for selecting random answer
+    func generateRandomInt(min: Int, max: Int) -> Int{
+        return min + Int(arc4random_uniform(UInt32(max - min + 1)))
+    }
+    
+    // Actually select random answer
+    func selectRandom(rand: Int){
+        switch(rand){
+        case 0:
+            buttonASelected()
+        case 1:
+            buttonBSelected()
+        case 2:
+            buttonCSelected()
+        default:
+            buttonDSelected()
+        }
+    }
+    
+    // Select random answer that is not the same consecutively
+    func selectRandomAnswer(){
+        print("Selecting random answer")
+        var rand = generateRandomInt(min: 0, max: 3)
+        
+        if let selectedAns = self.selectedAnswer{
+            // User has already selected an answer do not pick same one twice
+            switch(selectedAns){
+            case "A":
+                rand = generateRandomInt(min: 1, max: 3)
+                selectRandom(rand: rand)
+            case "B":
+                let newRand = generateRandomInt(min: 0, max: 1)
+                if newRand == 0{
+                    rand = generateRandomInt(min: 0, max: 0)
+                    selectRandom(rand: rand)
+                }
+                else{
+                    rand = generateRandomInt(min: 2, max: 3)
+                    selectRandom(rand: rand)
+                }
+            case "C":
+                let newRand = generateRandomInt(min: 0, max: 1)
+                if newRand == 0{
+                    rand = generateRandomInt(min: 0, max: 1)
+                    selectRandom(rand: rand)
+                }
+                else{
+                    rand = generateRandomInt(min: 3, max: 3)
+                    selectRandom(rand: rand)
+                }
+
+            case "D":
+                rand = generateRandomInt(min: 0, max: 2)
+                selectRandom(rand: rand)
+            default:
+                break
+            }
+        }
+        else{
+            // User has not selected an answer
+            selectRandom(rand: rand)
+        }
+    }
     
     // MARK - Session Methods
     
@@ -515,22 +650,35 @@ class QuizViewController:
         
         // If data is equal to segue key then go to the quiz controller
         if let dataString = NSKeyedUnarchiver.unarchiveObject(with: data) as? String{
-            print("Data String Received: \(dataString)")
             
-            switch(dataString){
-            case "A":
-                print("Case A")
-            case "B":
-                print("Case B")
-            case "C":
-                print("Case C")
-            case "D":
-                print("Case D")
-            default:
-                break
+            if let peerIndx = session.connectedPeers.index(of: peerID),
+                let correct = currentQuestion?.correctOption{
+                print("Peer Indx: \(peerIndx)")
+                print("Data String Received: \(dataString)")
+                print("Correct Answer: \(correct)")
+                
+                // If the answer is correct
+                if currentQuestion?.correctOption == dataString{
+                    setUserScore(index: peerIndx)
+                }
+                
             }
-            
-            
+        }
+    }
+    
+    func setUserScore(index: Int){
+        
+        switch(index){
+        case 0:
+            playerOneScore.text = "\(pOneScore + 1)"
+        case 1:
+            playerTwoScore.text = "\(pTwoScore + 1)"
+        case 2:
+            playerThreeScore.text = "\(pThreeScore + 1)"
+        case 3:
+            playerFourScore.text = "\(pFourScore + 1)"
+        default:
+            break
         }
     }
     
@@ -547,10 +695,8 @@ class QuizViewController:
         case MCSessionState.notConnected:
             print("Not Connected \(peerID.displayName)")
         }
-        
-        
-        
     }
+    
     
     // Called when a peer establishes a stream with this device
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {

@@ -143,33 +143,33 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2Yt-Cp-HRR">
-                                <rect key="frame" x="164" y="325.5" width="140" height="34"/>
+                                <rect key="frame" x="164" y="325.5" width="140" height="30"/>
                                 <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="calibratedRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                 <state key="normal" title="Button">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WjF-Df-BZg">
-                                <rect key="frame" x="16" y="367.5" width="140" height="34"/>
+                                <rect key="frame" x="16" y="363.5" width="140" height="30"/>
                                 <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="calibratedRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                 <state key="normal" title="Button">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RND-vT-AAR">
-                                <rect key="frame" x="16" y="325.5" width="140" height="34"/>
+                                <rect key="frame" x="16" y="325.5" width="140" height="30"/>
                                 <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="calibratedRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                 <state key="normal" title="Button">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="B4V-ZK-uUi">
-                                <rect key="frame" x="164" y="367.5" width="140" height="34"/>
+                                <rect key="frame" x="164" y="363.5" width="140" height="30"/>
                                 <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="calibratedRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                 <state key="normal" title="Button">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
@@ -199,11 +199,19 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="61P-f4-nTS">
-                                <rect key="frame" x="16" y="409" width="288" height="24"/>
+                                <rect key="frame" x="16" y="401" width="288" height="24"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2Of-gc-Jgb">
+                                <rect key="frame" x="16" y="433" width="288" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <state key="normal" title="Restart Quiz"/>
+                                <connections>
+                                    <action selector="userPressedRestartButton:" destination="pNA-RO-Fo7" eventType="touchUpInside" id="EhC-rz-LcV"/>
+                                </connections>
+                            </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RsS-vw-UBY">
                                 <rect key="frame" x="237" y="233" width="65" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -225,6 +233,7 @@
                             <constraint firstItem="RsS-vw-UBY" firstAttribute="width" secondItem="e5N-XA-JLD" secondAttribute="width" id="8z5-Rj-DjF"/>
                             <constraint firstItem="1x0-Ox-7EM" firstAttribute="leading" secondItem="qtp-2j-a2k" secondAttribute="trailing" constant="10" id="Cj7-ff-cW7"/>
                             <constraint firstItem="RsS-vw-UBY" firstAttribute="leading" secondItem="1x0-Ox-7EM" secondAttribute="trailing" constant="8" id="DMv-AJ-UpA"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="2Of-gc-Jgb" secondAttribute="trailing" id="EZa-ND-vf1"/>
                             <constraint firstItem="qtp-2j-a2k" firstAttribute="leading" secondItem="e5N-XA-JLD" secondAttribute="trailing" constant="8" id="EeH-5w-PaV"/>
                             <constraint firstItem="TI7-XI-OgS" firstAttribute="top" secondItem="1x0-Ox-7EM" secondAttribute="bottom" constant="8" id="EmR-yj-GQR"/>
                             <constraint firstItem="qtp-2j-a2k" firstAttribute="width" secondItem="e5N-XA-JLD" secondAttribute="width" id="Gm0-s9-zcx"/>
@@ -243,9 +252,11 @@
                             <constraint firstItem="qtp-2j-a2k" firstAttribute="leading" secondItem="e5N-XA-JLD" secondAttribute="trailing" constant="8" id="WW6-m4-ygb"/>
                             <constraint firstItem="1x0-Ox-7EM" firstAttribute="top" secondItem="fmh-ju-mKw" secondAttribute="bottom" constant="7" id="WmA-eU-9bW"/>
                             <constraint firstItem="61P-f4-nTS" firstAttribute="leading" secondItem="qgL-0a-Y6S" secondAttribute="leadingMargin" id="Ycb-jD-282"/>
+                            <constraint firstItem="2Of-gc-Jgb" firstAttribute="top" secondItem="61P-f4-nTS" secondAttribute="bottom" constant="8" id="Ydf-NN-Z6C"/>
                             <constraint firstItem="RsS-vw-UBY" firstAttribute="top" secondItem="fmh-ju-mKw" secondAttribute="bottom" constant="8" id="aBG-JJ-iuh"/>
                             <constraint firstItem="B4V-ZK-uUi" firstAttribute="width" secondItem="RND-vT-AAR" secondAttribute="width" id="baZ-Kh-gZE"/>
                             <constraint firstItem="1x0-Ox-7EM" firstAttribute="leading" secondItem="qtp-2j-a2k" secondAttribute="trailing" constant="10" id="bdI-CK-2fu"/>
+                            <constraint firstItem="2Of-gc-Jgb" firstAttribute="leading" secondItem="qgL-0a-Y6S" secondAttribute="leadingMargin" id="e9e-DM-fjI"/>
                             <constraint firstItem="B4V-ZK-uUi" firstAttribute="trailing" secondItem="qgL-0a-Y6S" secondAttribute="trailingMargin" id="eRV-gr-Xj3"/>
                             <constraint firstItem="61P-f4-nTS" firstAttribute="top" secondItem="B4V-ZK-uUi" secondAttribute="bottom" constant="8" id="g6P-4i-2aB"/>
                             <constraint firstItem="2Yt-Cp-HRR" firstAttribute="trailing" secondItem="qgL-0a-Y6S" secondAttribute="trailingMargin" id="jtV-vS-s6u"/>
@@ -281,6 +292,7 @@
                         <outlet property="playerTwoScore" destination="qtp-2j-a2k" id="pIA-Pz-6h4"/>
                         <outlet property="questionHeaderLabel" destination="TI7-XI-OgS" id="B78-AB-UHk"/>
                         <outlet property="questionLabel" destination="QXh-UC-qmX" id="aXA-6l-AXw"/>
+                        <outlet property="restartButton" destination="2Of-gc-Jgb" id="nSw-MW-ZVO"/>
                         <outlet property="textBubbleImageFour" destination="Z7F-aY-9dx" id="iq1-U1-mxl"/>
                         <outlet property="textBubbleImageOne" destination="hkk-QM-I6K" id="U3X-li-nUE"/>
                         <outlet property="textBubbleImageThree" destination="j6D-TS-uVS" id="xBf-QA-1yU"/>

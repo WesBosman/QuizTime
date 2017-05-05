@@ -9,6 +9,10 @@
 import UIKit
 import MultipeerConnectivity
 
+struct Globals{
+    static var arrayOfQuestions: [Question] = []
+}
+
 class ViewController:
     UIViewController,
     MCBrowserViewControllerDelegate,

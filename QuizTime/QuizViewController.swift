@@ -81,123 +81,31 @@ class QuizViewController:
     var timerLabelVar = 0
     var currentQuestion: Question? = nil
     var currentQuestionIndex: Int  = 0
+    var correctCounter = 3
+    
+    // Motion Manager
+    let motionManager = CMMotionManager()
+    var motionTimer   = Timer()
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        timerLabel.text = ""
         sessionOfPlayers.delegate = self
         startQuestionTimer()
         setUpTextLabelsForBubbles()
         grayOutPersons()
+        setUpQuestionOne()
         
-        let task = session.dataTask(with: quizUrl, completionHandler: {
-            (data, response, error) -> Void in
-            
-            print("Task Completion Handler")
-            
-            if let d = data{
-                print("Data: \(d)")
-            }
-            
-            if let r = response as? HTTPURLResponse{
-                print("Response: \(r)")
-                
-                if r.statusCode == 200{
-                    print("Successfully getting info from server")
-                    do{
-                        // Read JSON Data as a Dictionary
-                        let json = try JSONSerialization.jsonObject(with: data!, options: .allowFragments) as! [String: Any]
-                        
-                        
-                        if  let numQuestions = json["numberOfQuestions"] as? Int,
-                            let questions = json["questions"],
-                            let topic = json["topic"] as? String {
-                            
-                            print("Number of Questions: \(numQuestions)")
-                            print("Topic: \(topic)")
-
-                            
-                            // Parse the questions into an array
-                            if let questionsArray = questions as? NSArray{
-                                for question in questionsArray{
-                                    
-                                    if let quest = question as? NSDictionary{
-                                        
-                                        if let correctOption  = quest["correctOption"],
-                                            let number        = quest["number"],
-                                            let options       = quest["options"],
-                                            let questionSent  = quest["questionSentence"]{
-                                            
-                                            // Parse the elements into data types
-                                            if let cor = correctOption as? String,
-                                                let num = number as? Int,
-                                                let opt = options as? NSDictionary,
-                                                let sen = questionSent as? String{
-                                                
-                                                print("Corr -> \(cor)")
-                                                print("Num  -> \(num)")
-                                                print("Opt  -> \(opt)")
-                                                print("Sen  -> \(sen)")
-                                                
-                                                let newQuestion = Question(correct: cor,
-                                                     num:     num,
-                                                     opt:     opt,
-                                                     sent:    sen)
-                                                
-                                                self.currentQuestion = newQuestion
-                                                
-                                                // Add the new question to the array
-                                                self.arrayOfQuestions.append(newQuestion)
-
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                            }
-                            
-                            // Set up question one
-                            let qOne = self.arrayOfQuestions[0]
-                            
-                            if  let a = qOne.options["A"] as? String,
-                                let b = qOne.options["B"] as? String,
-                                let c = qOne.options["C"] as? String,
-                                let d = qOne.options["D"] as? String{
-                                
-                                let answerA = "A) \(a)"
-                                let answerB = "B) \(b)"
-                                let answerC = "C) \(c)"
-                                let answerD = "D) \(d)"
-                                
-                                self.answerButtonA.setTitle(answerA, for: .normal)
-                                self.answerButtonB.setTitle(answerB, for: .normal)
-                                self.answerButtonC.setTitle(answerC, for: .normal)
-                                self.answerButtonD.setTitle(answerD, for: .normal)
-                            }
-                            
-                            let questNum = qOne.number
-                            let totalNum = self.arrayOfQuestions.count
-                            
-                            // Set the first question
-                            self.questionLabel.text = qOne.questionSentence
-                            self.questionHeaderLabel.text = "Question \(questNum)/\(totalNum)"
-                            
-
-                        }
-                    }
-                    catch let err as NSError{
-                        print("ERROR: \(err.localizedDescription)")
-                    }
-                }
-            }
-            
-            if let e = error{
-                print("Error: \(e)")
-            }
-            
-        })
-        task.resume()
-        
+        self.currentQuestion = Globals.arrayOfQuestions[0]
+        self.motionManager.deviceMotionUpdateInterval = 1.0 / 60.0
+        self.motionManager.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical)
+        motionTimer = Timer.scheduledTimer(timeInterval: 0.01,
+                                           target: self,
+                                           selector: #selector(updateMotion),
+                                           userInfo: nil,
+                                           repeats: true)
         
         // Selectors for buttons
         answerButtonA.addTarget(self, action: #selector(buttonASelected), for: .touchUpInside)
@@ -205,6 +113,103 @@ class QuizViewController:
         answerButtonC.addTarget(self, action: #selector(buttonCSelected), for: .touchUpInside)
         answerButtonD.addTarget(self, action: #selector(buttonDSelected), for: .touchUpInside)
         
+    }
+    
+    func setUpQuestionOne(){
+        // Set up question one
+        let qOne = Globals.arrayOfQuestions[0]
+        
+        if  let a = qOne.options["A"] as? String,
+            let b = qOne.options["B"] as? String,
+            let c = qOne.options["C"] as? String,
+            let d = qOne.options["D"] as? String{
+            
+            let answerA = "A) \(a)"
+            let answerB = "B) \(b)"
+            let answerC = "C) \(c)"
+            let answerD = "D) \(d)"
+            
+            // Sometimes setting the title doesn't update the buttons?
+            self.answerButtonA.setTitle(answerA, for: .normal)
+            self.answerButtonB.setTitle(answerB, for: .normal)
+            self.answerButtonC.setTitle(answerC, for: .normal)
+            self.answerButtonD.setTitle(answerD, for: .normal)
+            
+            self.answerButtonA.titleLabel?.text = answerA
+            self.answerButtonB.titleLabel?.text = answerB
+            self.answerButtonC.titleLabel?.text = answerC
+            self.answerButtonD.titleLabel?.text = answerD
+        }
+        
+        let questNum = qOne.number
+        let totalNum = Globals.arrayOfQuestions.count
+        
+        // Set the first question
+        self.questionLabel.text = qOne.questionSentence
+        self.questionHeaderLabel.text = "Question \(questNum)/\(totalNum)"
+    }
+    
+    func updateMotion(){
+        if let data = self.motionManager.deviceMotion{
+            let attitude     = data.attitude
+            let pitch        = attitude.pitch
+            let roll         = attitude.roll
+            
+            // Go Right
+            if(roll > 1.0){
+                if(aSelected){
+                    bSelected = true
+                    aSelected = false
+                    updateSelectedButtonColor()
+                }
+                else if(cSelected){
+                    dSelected = true
+                    cSelected = false
+                    updateSelectedButtonColor()
+                }
+            }
+            // Go Left
+            else if(roll < -1.0){
+                if(bSelected){
+                    aSelected = true
+                    bSelected = false
+                    updateSelectedButtonColor()
+                }
+                else if(dSelected){
+                    cSelected = true
+                    bSelected = false
+                    updateSelectedButtonColor()
+                }
+            }
+            
+            // Control pitch
+            // Forward
+            if(pitch > 1.0){
+                if(aSelected){
+                    cSelected = true
+                    aSelected = false
+                    updateSelectedButtonColor()
+                }
+                else if(bSelected){
+                    dSelected = true
+                    bSelected = false
+                    updateSelectedButtonColor()
+                }
+            }
+            // Backward
+            else if(pitch < -1.0){
+                if(cSelected){
+                    aSelected = true
+                    cSelected = false
+                    updateSelectedButtonColor()
+                }
+                else if(dSelected){
+                    bSelected = true
+                    dSelected = false
+                    updateSelectedButtonColor()
+                }
+            }
+        }
     }
     
     func grayOutPersons(){
@@ -340,49 +345,68 @@ class QuizViewController:
     }
     
     func timerStarted(){
-        print("Question Timer Started")
+        print("Question Timer Count \(count)")
         timerLabel.text = "\(count)"
         count = count - 1
         
-        if count == 0{
-            timerLabel.text = "\(count)"
-            count = count - 1
+        if count == -1{
             questionTimer.invalidate()
             
-            // Show the correct answer
-            if let correct = currentQuestion?.correctOption{
-                switch(correct){
-                case "A":
-                    print("Case A was correct")
-                    answerButtonA.backgroundColor = UIColor.green
-                case "B":
-                    print("Case B was correct")
-                    answerButtonB.backgroundColor = UIColor.green
-                case "C":
-                    print("Case C was correct")
-                    answerButtonC.backgroundColor = UIColor.green
-                case "D":
-                    print("Case D was correct")
-                    answerButtonD.backgroundColor = UIColor.green
-                default:
-                    break
-                }
-                
-                // Go to the next question
-                goToNextQuestion()
-            }
+            // Show the correct answer on a timer
+            correctTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(showCorrectAnswer), userInfo: nil, repeats: true)
             
         }
     }
     
-    /*
-    *   Add Core Motion for user selection
-    *   Add a three second timer for correct answers
-    *
-    */
+    func showCorrectAnswer(){
+        print("Show Correct Answer")
+        
+        // Show the correct answer
+        if let correct = self.currentQuestion?.correctOption{
+            switch(correct){
+            case "A":
+                print("Case A was correct")
+                self.answerButtonA.backgroundColor = UIColor.green
+            case "B":
+                print("Case B was correct")
+                self.answerButtonB.backgroundColor = UIColor.green
+            case "C":
+                print("Case C was correct")
+                self.answerButtonC.backgroundColor = UIColor.green
+            case "D":
+                print("Case D was correct")
+                self.answerButtonD.backgroundColor = UIColor.green
+            default:
+                break
+            }
+        }
+        else{
+            print("No Current Question")
+        }
+        
+        correctCounter = correctCounter - 1
+        
+        if correctCounter == 0{
+            self.correctCounter = 3
+            correctTimer.invalidate()
+            
+            if let index = Globals.arrayOfQuestions.index(where: {$0.questionSentence == currentQuestion?.questionSentence}){
+                print("Question Sentence: \(currentQuestion?.questionSentence)")
+                print("Index of Question: \(index)")
+                print("Count of questions: \(Globals.arrayOfQuestions.count - 1)")
+                
+                if index < Globals.arrayOfQuestions.count - 1{
+                    // Go to the next question
+                    goToNextQuestion()
+                }
+            }
+        }
+
+    }
     
     func goToNextQuestion(){
         // Reset the button colors
+        print("Go To Next Question")
         answerButtonA.backgroundColor = UIColor.lightGray
         answerButtonB.backgroundColor = UIColor.lightGray
         answerButtonC.backgroundColor = UIColor.lightGray
@@ -390,8 +414,11 @@ class QuizViewController:
         currentQuestionIndex = currentQuestionIndex + 1
         let currentIndx = currentQuestionIndex
         
-        if currentIndx < arrayOfQuestions.count{
-            let question = arrayOfQuestions[currentIndx]
+        // Update the current question
+        self.currentQuestion = Globals.arrayOfQuestions[currentIndx - 1]
+        
+        if currentIndx < Globals.arrayOfQuestions.count{
+            let question = Globals.arrayOfQuestions[currentIndx]
             
             if  let a = question.options["A"],
                 let b = question.options["B"],
@@ -399,7 +426,7 @@ class QuizViewController:
                 let d = question.options["D"]{
                 
                 let current = question.number
-                let total   = arrayOfQuestions.count
+                let total   = Globals.arrayOfQuestions.count
                 questionLabel.text = question.questionSentence
                 questionHeaderLabel.text = "Question \(current)/\(total)"
                 answerButtonA.setTitle("A) \(a)", for: .normal)

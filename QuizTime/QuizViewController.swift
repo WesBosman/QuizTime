@@ -187,41 +187,63 @@ class QuizViewController:
             let yaw          = attitude.yaw
             let acceleration = data.userAcceleration.z
             
+            // Roll and Pitch do not submit
+            // Yaw and acceleration do submit
+            
             // Go Right
             if(roll > 1.0){
                 if(aSelected){
-                    buttonBSelected()
+                    bSelected = true
+                    aSelected = false
+                    updateSelectedButtonColor()
                 }
                 else if(cSelected){
-                    buttonDSelected()
-                }
-            }
-            // Go Left
-            else if(roll < -1.0){
-                if(bSelected){
-                    buttonASelected()
-                }
-                else if(dSelected){
-                    buttonCSelected()
+                    dSelected = true
+                    cSelected = false
+                    updateSelectedButtonColor()
                 }
             }
             
+            // Go Left
+            else if(roll < -1.0){
+                if(bSelected){
+                    aSelected = true
+                    bSelected = false
+                    updateSelectedButtonColor()
+                }
+                else if(dSelected){
+                    cSelected = true
+                    bSelected = false
+                    updateSelectedButtonColor()
+                }
+            }
+            
+            // Control pitch
             // Forward
             if(pitch > 1.0){
                 if(aSelected){
-                    buttonCSelected()
+                    cSelected = true
+                    aSelected = false
+                    updateSelectedButtonColor()
                 }
                 else if(bSelected){
-                    buttonDSelected()
+                    dSelected = true
+                    bSelected = false
+                    updateSelectedButtonColor()
                 }
             }
+            
             // Backward
             else if(pitch < -1.0){
                 if(cSelected){
-                    buttonASelected()
+                    aSelected = true
+                    cSelected = false
+                    updateSelectedButtonColor()
                 }
                 else if(dSelected){
-                    buttonBSelected()
+                    bSelected = true
+                    dSelected = false
+                    updateSelectedButtonColor()
                 }
             }
             
@@ -581,17 +603,33 @@ class QuizViewController:
         return min + Int(arc4random_uniform(UInt32(max - min + 1)))
     }
     
-    // Actually select random answer
+    // Actually select random answer should not cause submission
     func selectRandom(rand: Int){
         switch(rand){
         case 0:
-            buttonASelected()
+            aSelected = true
+            bSelected = false
+            cSelected = false
+            dSelected = false
+            updateSelectedButtonColor()
         case 1:
-            buttonBSelected()
+            aSelected = false
+            bSelected = true
+            cSelected = false
+            dSelected = false
+            updateSelectedButtonColor()
         case 2:
-            buttonCSelected()
+            aSelected = false
+            bSelected = false
+            cSelected = true
+            dSelected = false
+            updateSelectedButtonColor()
         default:
-            buttonDSelected()
+            aSelected = false
+            bSelected = false
+            cSelected = false
+            dSelected = true
+            updateSelectedButtonColor()
         }
     }
     

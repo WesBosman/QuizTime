@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		DED069501EB7C4BD00106727 /* QuizViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED0694F1EB7C4BC00106727 /* QuizViewController.swift */; };
 		DED069531EB7C5A200106727 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DED069521EB7C5A200106727 /* CoreMotion.framework */; };
+		DED069551EBA75B900106727 /* Question.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED069541EBA75B900106727 /* Question.swift */; };
 		DEF0D3D81EB783D000BB52C9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0D3D71EB783D000BB52C9 /* AppDelegate.swift */; };
 		DEF0D3DA1EB783D000BB52C9 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF0D3D91EB783D000BB52C9 /* ViewController.swift */; };
 		DEF0D3DD1EB783D000BB52C9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DEF0D3DB1EB783D000BB52C9 /* Main.storyboard */; };
@@ -19,6 +20,7 @@
 /* Begin PBXFileReference section */
 		DED0694F1EB7C4BC00106727 /* QuizViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QuizViewController.swift; sourceTree = "<group>"; };
 		DED069521EB7C5A200106727 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		DED069541EBA75B900106727 /* Question.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Question.swift; sourceTree = "<group>"; };
 		DEF0D3D41EB783D000BB52C9 /* QuizTime.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuizTime.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DEF0D3D71EB783D000BB52C9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		DEF0D3D91EB783D000BB52C9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -71,6 +73,7 @@
 				DEF0D3D71EB783D000BB52C9 /* AppDelegate.swift */,
 				DEF0D3D91EB783D000BB52C9 /* ViewController.swift */,
 				DED0694F1EB7C4BC00106727 /* QuizViewController.swift */,
+				DED069541EBA75B900106727 /* Question.swift */,
 				DEF0D3DB1EB783D000BB52C9 /* Main.storyboard */,
 				DEF0D3DE1EB783D000BB52C9 /* Assets.xcassets */,
 				DEF0D3E01EB783D000BB52C9 /* LaunchScreen.storyboard */,
@@ -153,6 +156,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DED069501EB7C4BD00106727 /* QuizViewController.swift in Sources */,
+				DED069551EBA75B900106727 /* Question.swift in Sources */,
 				DEF0D3DA1EB783D000BB52C9 /* ViewController.swift in Sources */,
 				DEF0D3D81EB783D000BB52C9 /* AppDelegate.swift in Sources */,
 			);
@@ -279,6 +283,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = GV7EE9PX98;
 				INFOPLIST_FILE = QuizTime/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wesBosman.QuizTime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -292,6 +297,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = GV7EE9PX98;
 				INFOPLIST_FILE = QuizTime/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wesBosman.QuizTime;
 				PRODUCT_NAME = "$(TARGET_NAME)";

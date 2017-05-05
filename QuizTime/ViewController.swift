@@ -71,18 +71,37 @@ class ViewController:
             print("Connected Peer: \(peer.displayName)")
         }
         
-        // Use a key to send everyone to the quiz segue
-        // Reliabile sends data in order but is slow
-        // Unreliable sends data faster but may be out of order
-        let data = NSKeyedArchiver.archivedData(withRootObject: segueKey)
-        do{
-            try session.send(data, toPeers: session.connectedPeers, with: MCSessionSendDataMode.unreliable)
+        // If multiplayer selected and no one is connected error
+        if singlePlayerSelected == false && session.connectedPeers.count == 0{
+            let alert = UIAlertController(title: "Error", message: "Multiplayer was selected but there are no connected peers. Please Connect to other players to continue playing multiplayer", preferredStyle: .alert)
+            let dismissAction = UIAlertAction(title: "Dismiss", style: .cancel, handler: nil)
+            alert.addAction(dismissAction)
+            self.present(alert, animated: true, completion: nil)
         }
-        catch let err as NSError{
-            print("ERROR: \(err.localizedDescription)")
+        // More than three peers are connected
+        // Only allowed to have at most 4 players total
+        else if singlePlayerSelected == false && session.connectedPeers.count > 3{
+            let alert = UIAlertController(title: "Error", message: "There are too many connected peers. Please reduce the number of connected peers to continue.", preferredStyle: .alert)
+            let dismissAction = UIAlertAction(title: "Dismiss", style: .cancel, handler: nil)
+            alert.addAction(dismissAction)
+            self.present(alert, animated: true, completion: nil)
         }
-        
-        performSegue(withIdentifier: quizSegue, sender: self)
+        // Otherwise begin the game
+        else{
+            // Use a key to send everyone to the quiz segue
+            // Reliabile sends data in order but is slow
+            // Unreliable sends data faster but may be out of order
+            let data = NSKeyedArchiver.archivedData(withRootObject: segueKey)
+            do{
+                try session.send(data, toPeers: session.connectedPeers, with: MCSessionSendDataMode.unreliable)
+            }
+            catch let err as NSError{
+                print("ERROR: \(err.localizedDescription)")
+            }
+            
+            performSegue(withIdentifier: quizSegue, sender: self)
+            
+        }
         
     }
     
@@ -136,6 +155,11 @@ class ViewController:
             print("Not Connected \(peerID.displayName)")
         }
         
+        if session.connectedPeers.count > 0{
+            // Switch to multiplayer if there are connected peers
+            playerSegmentedControl.selectedSegmentIndex = 1
+        }
+        
     }
     
     // Called when a peer establishes a stream with this device
@@ -164,7 +188,7 @@ class ViewController:
         print("Segue to Quiz View Controller")
         
         if let destination = segue.destination as? QuizViewController{
-            destination.numberOfPlayers  = session.connectedPeers.count
+            destination.numberOfPlayers  = session.connectedPeers.count + 1
             destination.sessionOfPlayers = session
             
             print("Number of Players: \(session.connectedPeers.count)")

@@ -15,8 +15,12 @@ struct Globals{
     static var quizOneUrl = URL(string: "http://www.people.vcu.edu/~ebulut/jsonFiles/quiz1.json")!
     static var quizTwoUrl = URL(string: "http://www.people.vcu.edu/~ebulut/jsonFiles/quiz2.json")!
     static var quizThreeUrl = URL(string: "http://www.people.vcu.edu/~ebulut/jsonFiles/quiz3.json")!
+    static var quizOne:   [Question] = []
+    static var quizTwo:   [Question] = []
+    static var quizThree: [Question] = []
     
-    static func loadQuizData(quizUrl: URL){
+    static func loadQuizData(quizUrl: URL, quizNumber: Int){
+        
         let task = session.dataTask(with: quizUrl, completionHandler: {
             (data, response, error) -> Void in
             
@@ -72,7 +76,16 @@ struct Globals{
                                                                            sent:    sen)
                                                 
                                                 // Add the new question to the array
-                                                Globals.arrayOfQuestions.append(newQuestion)
+                                                switch(quizNumber){
+                                                case 1:
+                                                    Globals.quizOne.append(newQuestion)
+                                                case 2:
+                                                    Globals.quizTwo.append(newQuestion)
+                                                case 3:
+                                                    Globals.quizThree.append(newQuestion)
+                                                default:
+                                                    break
+                                                }
                                             }
                                         }
                                     }
@@ -92,7 +105,6 @@ struct Globals{
             
         })
         task.resume()
-
     }
 }
 

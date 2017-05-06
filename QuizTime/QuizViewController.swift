@@ -92,11 +92,18 @@ class QuizViewController:
     let motionManager = CMMotionManager()
     var motionTimer   = Timer()
     var myPeers: [MCPeerID] = []
+    var userCorrect = false
+    var restartNumber = 0
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        Globals.arrayOfQuestions = Globals.quizOne
+        setUpGame()
         
+    }
+    
+    func setUpGame(){
         timerLabel.text = ""
         restartButton.isHidden = true
         sessionOfPlayers.delegate = self
@@ -106,6 +113,7 @@ class QuizViewController:
         setUpQuestionOne()
         
         self.currentQuestion = Globals.arrayOfQuestions[0]
+        self.currentQuestionIndex = 0
         self.motionManager.deviceMotionUpdateInterval = 1.0 / 60.0
         self.motionManager.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical)
         motionTimer = Timer.scheduledTimer(timeInterval: 0.01,
@@ -121,7 +129,6 @@ class QuizViewController:
         answerButtonD.addTarget(self, action: #selector(buttonDSelected), for: .touchUpInside)
         
         self.becomeFirstResponder()
-        
     }
     
     override var canBecomeFirstResponder: Bool{
@@ -143,7 +150,15 @@ class QuizViewController:
         print("User Pressed Restart Button")
         
         // How to restart the game?
-        
+        restartNumber += 1
+        if restartNumber == 1{
+            Globals.arrayOfQuestions = Globals.quizTwo
+        }
+        else if restartNumber == 2{
+            Globals.arrayOfQuestions = Globals.quizOne
+            restartNumber = 0
+        }
+        setUpGame()
     }
     
     
@@ -251,44 +266,18 @@ class QuizViewController:
             
             // Select an answer using acceleration in z direction
             if(acceleration < -1.0){
-                userSelectedAnswer()
+                userSubmittedAnswer()
             }
             
             // Let user select an answer using yaw
             if(yaw > 1.0){
-                userSelectedAnswer()
+                userSubmittedAnswer()
             }
             else if(yaw < -1.0){
-                userSelectedAnswer()
+                userSubmittedAnswer()
             }
             
         }
-    }
-    
-    // When user is submitting an answer. Should probably rename
-    
-    func userSelectedAnswer(){
-        print("Selecting Answer")
-        if let selectedAns = selectedAnswer{
-            print("User Selected Answer: \(selectedAns)")
-            
-            switch(selectedAns){
-            case "A":
-                buttonASelected()
-            case "B":
-                buttonBSelected()
-            case "C":
-                buttonCSelected()
-            case "D":
-                buttonDSelected()
-            default:
-                break
-            }
-        }
-        else{
-            print("No Answer Selected")
-        }
-
     }
     
     func grayOutPersons(){
@@ -439,10 +428,10 @@ class QuizViewController:
     func startQuestionTimer(){
         count = 20
         questionTimer = Timer.scheduledTimer(timeInterval: 1,
-                                             target: self,
+                                             target:   self,
                                              selector: #selector(timerStarted),
                                              userInfo: nil,
-                                             repeats: true)
+                                             repeats:  true)
     }
     
     func timerStarted(){
@@ -450,12 +439,16 @@ class QuizViewController:
         timerLabel.text = "\(count)"
         count = count - 1
         
-        if count == -1{
+        if count == -1 || userCorrect{
             questionTimer.invalidate()
+            if (userCorrect){
+                pOneScore += 1
+                playerOneScore.text = "\(pOneScore)"
+            }
+            userCorrect = false
             
             // Show the correct answer on a timer
             correctTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(showCorrectAnswer), userInfo: nil, repeats: true)
-            
         }
     }
     
@@ -501,7 +494,6 @@ class QuizViewController:
                 }
             }
         }
-
     }
     
     func goToNextQuestion(){
@@ -509,6 +501,7 @@ class QuizViewController:
         print("Go To Next Question")
         currentQuestionIndex = currentQuestionIndex + 1
         let currentIndx = currentQuestionIndex
+        print("Current Question Index: \(currentQuestionIndex)")
         
         // Update the current question
         self.currentQuestion = Globals.arrayOfQuestions[currentIndx - 1]
@@ -558,18 +551,6 @@ class QuizViewController:
         cSelected = false
         dSelected = false
         updateSelectedButtonColor()
-        
-        if currentQuestion?.correctOption == "A"{
-            setUserScoreAndAnswer(index: 0, answer: "A")
-        }
-        
-        let data = NSKeyedArchiver.archivedData(withRootObject: "A")
-        do{
-            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
-        }
-        catch let err as NSError{
-            print("ERROR: \(err.localizedDescription)")
-        }
     }
     
     func buttonBSelected(){
@@ -578,18 +559,6 @@ class QuizViewController:
         cSelected = false
         dSelected = false
         updateSelectedButtonColor()
-        
-        if currentQuestion?.correctOption == "B"{
-            setUserScoreAndAnswer(index: 0, answer: "B")
-        }
-        
-        let data = NSKeyedArchiver.archivedData(withRootObject: "B")
-        do{
-            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
-        }
-        catch let err as NSError{
-            print("ERROR: \(err.localizedDescription)")
-        }
     }
     
     func buttonCSelected(){
@@ -598,18 +567,6 @@ class QuizViewController:
         cSelected = true
         dSelected = false
         updateSelectedButtonColor()
-        
-        if currentQuestion?.correctOption == "C"{
-            setUserScoreAndAnswer(index: 0, answer: "C")
-        }
-        
-        let data = NSKeyedArchiver.archivedData(withRootObject: "C")
-        do{
-            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
-        }
-        catch let err as NSError{
-            print("ERROR: \(err.localizedDescription)")
-        }
     }
     
     func buttonDSelected(){
@@ -618,17 +575,128 @@ class QuizViewController:
         cSelected = false
         dSelected = true
         updateSelectedButtonColor()
-        
-        if currentQuestion?.correctOption == "D"{
+    }
+    
+    // When user is submitting an answer.
+    
+    func userSubmittedAnswer(){
+        print("Submitting Answer")
+        if let selectedAns = selectedAnswer{
+            print("User Submitted Answer: \(selectedAns)")
+            buttonSubmitted(button: selectedAns)
+        }
+        else{
+            print("No Answer Selected")
+        }
+    }
+    
+    // Button that the user submitted
+    
+    func buttonSubmitted(button: String){
+        switch(button){
+        case "A":
+            setUserScoreAndAnswer(index: 0, answer: "A")
+            
+            if currentQuestion?.correctOption == "A"{
+                userCorrect = true
+            }
+            
+            if sessionOfPlayers.connectedPeers.count == 0{
+                
+            }
+            else{
+                let data = NSKeyedArchiver.archivedData(withRootObject: "A")
+                do{
+                    try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
+                }
+                catch let err as NSError{
+                    print("ERROR: \(err.localizedDescription)")
+                }
+            }
+            
+        case "B":
+            setUserScoreAndAnswer(index: 0, answer: "B")
+            
+            if currentQuestion?.correctOption == "B"{
+                userCorrect = true
+            }
+            
+            if sessionOfPlayers.connectedPeers.count == 0{
+                
+            }
+            else{
+                let data = NSKeyedArchiver.archivedData(withRootObject: "B")
+                do{
+                    try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
+                }
+                catch let err as NSError{
+                    print("ERROR: \(err.localizedDescription)")
+                }
+            }
+
+        case "C":
+            setUserScoreAndAnswer(index: 0, answer: "C")
+            
+            
+            if currentQuestion?.correctOption == "C"{
+                userCorrect = true
+            }
+            
+            if sessionOfPlayers.connectedPeers.count == 0{
+                
+            }
+            else{
+                let data = NSKeyedArchiver.archivedData(withRootObject: "C")
+                do{
+                    try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
+                }
+                catch let err as NSError{
+                    print("ERROR: \(err.localizedDescription)")
+                }
+            }
+            
+        case "D":
             setUserScoreAndAnswer(index: 0, answer: "D")
+            
+            if currentQuestion?.correctOption == "D"{
+                userCorrect = true
+            }
+            
+            // No Peers are connected go to next question
+            if sessionOfPlayers.connectedPeers.count == 0{
+                
+            }
+                // Peers are connected send them data
+            else{
+                let data = NSKeyedArchiver.archivedData(withRootObject: "D")
+                do{
+                    try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
+                }
+                catch let err as NSError{
+                    print("ERROR: \(err.localizedDescription)")
+                }
+            }
+        default:
+            break
         }
+    }
+    
+    // If the player gets the question correct
+    
+    func setUserScoreAndAnswer(index: Int, answer: String){
+        print("Set User Answer and Score")
         
-        let data = NSKeyedArchiver.archivedData(withRootObject: "D")
-        do{
-            try sessionOfPlayers.send(data, toPeers: sessionOfPlayers.connectedPeers, with: MCSessionSendDataMode.reliable)
-        }
-        catch let err as NSError{
-            print("ERROR: \(err.localizedDescription)")
+        switch(index){
+        case 0:
+            bubbleOneLabel.text = "\(answer)"
+        case 1:
+            bubbleTwoLabel.text = "\(answer)"
+        case 2:
+            bubbleThreeLabel.text = "\(answer)"
+        case 3:
+            bubbleFourLabel.text = "\(answer)"
+        default:
+            break
         }
     }
     
@@ -733,33 +801,10 @@ class QuizViewController:
                 
                 // If the answer is correct
                 if currentQuestion?.correctOption == dataString{
-                    setUserScoreAndAnswer(index: peerIndx, answer: dataString)
+                    setUserScoreAndAnswer(index: peerIndx + 1, answer: dataString)
                 }
                 
             }
-        }
-    }
-    
-    func setUserScoreAndAnswer(index: Int, answer: String){
-        print("Set User Answer and Score")
-        print("Index : \(index)")
-        print("Answer: \(answer)")
-        
-        switch(index){
-        case 0:
-            bubbleOneLabel.text = "\(answer)"
-            playerOneScore.text = "\(pOneScore + 1)"
-        case 1:
-            bubbleTwoLabel.text = "\(answer)"
-            playerTwoScore.text = "\(pTwoScore + 1)"
-        case 2:
-            bubbleThreeLabel.text = "\(answer)"
-            playerThreeScore.text = "\(pThreeScore + 1)"
-        case 3:
-            bubbleFourLabel.text = "\(answer)"
-            playerFourScore.text = "\(pFourScore + 1)"
-        default:
-            break
         }
     }
     

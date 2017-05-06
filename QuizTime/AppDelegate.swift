@@ -17,7 +17,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         // Load quiz one data
-        Globals.loadQuizData(quizUrl: Globals.quizOneUrl)
+        Globals.loadQuizData(quizUrl: Globals.quizOneUrl, quizNumber: 1)
+        Globals.loadQuizData(quizUrl: Globals.quizTwoUrl, quizNumber: 2)
+        Globals.loadQuizData(quizUrl: Globals.quizThreeUrl, quizNumber: 3)
         
         return true
     }
